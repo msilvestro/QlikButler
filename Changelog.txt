@@ -1,0 +1,55 @@
+2019.11.25 - v3.0.4
+* Aggiunta gestione file System.config durante dis/installazione.
+
+2019.11.22 - v3.0.3
+* Lo script di installazione ora legge la configurazione di Qlik Sense per capire, per ogni nodo, quali servizi sono stati abilitati.
+* Visualizzazione della versione nella finestra principale.
+
+2019.10.28 - v3.0.2
+* Aggiunta gestione servizi incartati durante il backup.
+
+2019.10.09 - v3.0.0
+* Completo restyling dell'applicazione.
+* È presente una DataGridView con l'elenco di tutti i nodi di tutti i cluster.
+* Si possono aggiungere informazioni sullo stato dei nodi/cluster: esecuzione in parallelo, visualizzazione avanzamento tramite ProgressBar.
+* Per tutti i cluster selezionati posso essere eseguiti script esterni (tipo aggiornamento).
+
+2019.10.02 - v2.3.3
+* Aggiunta schedulazione per svecchiamento licenze.
+
+2019.09.19 - v2.3.1
+* Aggiunta visualizzazione stato di backup per i cluster.
+
+2019.08.27 - v2.3.0
+* Riorganizzata divisione in schede, cancellando l'ultima e rinominando le restanti.
+* Aggiunto pulsante "Aggiorna tutto" per un aggiornamento in massa.
+
+2019.08.22 - v2.2.4
+* Aggiunta scorciatoia per gli utenti.
+* Rinominato da "Qlik Butler Installer" a "Qlik Butler Manager".
+* Aggiunta un'icona differente per Qlik Butler Manager.
+
+2019.08.21 - v2.2.3
+* Cambiata posizione cartella log.
+* Aggiunta barra di progresso per lo stato dei nodi.
+
+2019.08.20 - v2.2.2
+* Aggiunto script per la visualizzazione dello stato complessivo e per il riavvio dei singoli nodi.
+* Aggiunta scheda per lo stato complessivo.
+
+2019.08.20 - v2.2.1
+* Aggiunta gestione NPrinting nell'interfaccia.
+* Disabilitazione dei controlli mentre avviene l'aggiornamento.
+
+2019.08.19 - v2.1.0
+* Installazione e gestione installazioni NPrinting implementate.
+
+2019.08.12 - v2.0.2
+* Risolti alcuni bug visivi.
+
+2019.08.12 - v2.0.0
+* Creata interfaccia a schede, con una pagina per la gestione dell'installazione su un singolo cluster e un'altra per la gestione delle installazioni su un intero ambiente.
+* Aggiornamento delle informazioni ad ogni modifica e visualizzazione di etichette intuitive.
+* Visualizzazione dello stato delle installazioni di tutto un ambiente.
+* Implementato aggiornamento su tutti i cluster di un ambiente.
+* Implementato controllo della installazione delle schedulazioni.

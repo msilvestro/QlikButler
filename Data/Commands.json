@@ -1,0 +1,82 @@
+[
+	{
+		"Name": "-- Cluster --",
+		"Type": "Cluster",
+        	"CommandScript": "Test-ClusterSelection",
+		"Params": {
+			"Extra": "Questa è una prova per i cluster!"
+		}
+        },
+	{
+		"Name": "Controlla raggiungibilità",
+		"Type": "Cluster",
+		"CommandScript": "Test-QlikAccess"
+        },
+	{
+		"Name": "Aggiorna",
+		"Type": "Cluster",
+		"CommandScript": "QlikButlerManager",
+		"Params": {
+			"Uninstall": true,
+			"Install": true,
+			"NoConfig": true,
+			"NoTasks": true
+		}
+	},
+	{
+		"Name": "Aggiorna (schedulazioni incluse)",
+		"Type": "Cluster",
+		"CommandScript": "QlikButlerManager",
+		"Params": {
+			"Uninstall": true,
+			"Install": true,
+			"NoConfig": true,
+			"NoTasks": false
+		}
+        },
+        {
+		"Name": "Installa",
+		"Type": "Cluster",
+		"CommandScript": "QlikButlerManager",
+		"Params": {
+			"Uninstall": false,
+			"Install": true,
+			"NoConfig": false,
+			"NoTasks": false
+		}
+        },
+	{
+		"Name": "Disinstalla",
+		"Type": "Cluster",
+		"CommandScript": "QlikButlerManager",
+		"Params": {
+			"Uninstall": true,
+			"Install": false,
+			"NoConfig": false,
+			"NoTasks": false
+		}
+        },
+	{
+		"Name": "Riavvia servizi cluster",
+		"Type": "Cluster",
+        	"CommandScript": "Restart-ClusterService"
+        },
+	{
+		"Name": "-- Nodi --",
+		"Type": "Node",
+        	"CommandScript": "Test-NodeSelection",
+		"Params": {
+			"Extra": "Questa è una prova per i nodi!"
+		}
+        },
+	{
+		"Name": "Riavvia servizi nodi",
+		"Type": "Node",
+        	"CommandScript": "Restart-NodeService"
+        },
+	{
+		"Name": "Interruzione forzata servizi nodi",
+		"Type": "Node",
+        	"CommandScript": "Kill-NodeService"
+        }
+]

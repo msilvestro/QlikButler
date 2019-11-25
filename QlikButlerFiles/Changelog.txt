@@ -1,0 +1,97 @@
+2019.11.25 - 3.0.1
+* Creato file di configurazione System.config con tutte le utenze, le password e i percorsi necessari.
+
+2019.11.19 - 2.6.2
+* Implementata l'importazione delle Extensions.
+
+2019.11.14 - 2.6.1
+* Ora lo svecchiamento backup elimina correttamente i file di log.
+
+2019.11.11 - v2.6.0
+* Uniformata la gestione delle finestre PowerShell lanciate dall'interfaccia di Qlik Butler.
+* Migliorato script per installazione Qlik Cli.
+
+2019.10.28 - v2.5.9
+* Gestione servizi incartati durante il backup.
+* Cambio il nome del log per lo svecchiamento licenze.
+
+2019.10.02 - v2.5.7
+* Lo svecchiamento licenze ora scrive il log sulla share.
+* Aggiunto comando per impostare tutti i servizi in automatic.
+
+2019.09.24 - v2.5.6
+* Ora lo stato servizi viene visualizzato in una ListView con colori e modalità (manual, disabled, ...)
+* Correzione malfunzionamento svecchiamento backup.
+* Aggiunto pulsante per svecchiamento backup.
+* Aggiunto comando per installazione Qlik Cli.
+
+2019.09.23 - v2.5.0
+* Interfaccia completamente rinnovata, molto più user friendly.
+* Visualizzazione stato servizi in un'area di testo.
+* Aggiunto pulsante per backup manuale e svecchiamento licenze.
+* Aggiunta selezione comandi secondari per script di piccola entità.
+* Ora lo svecchiamento di default cancella tutto eccetto gli ultimi 2 file.
+
+2019.09.19 - v2.4.1
+* Ora lo svecchiamento backup cancella tutto eccetto gli ultimi 7 file.
+
+2019.08.30 - v2.4.0
+* Aggiunta possibilità di solo arresto o avvio servizi.
+* Aggiunti pulsanti sull'interfaccia corrispondenti.
+
+2019.08.29 - v2.3.9
+* Aggiustata formattazione stato nodi post-backup.
+* Migliorata la parte di controllo stato nodi post-backup.
+
+2019.08.28 - v2.3.8
+* Aggiunta gestione password personalizzata per cluster per l'accesso al database repository.
+* Aggiunto script per svecchiamento licenze.
+* Lo script di backup ora riavvia i singoli rim se sono solo quelli a non essere raggiungibili.
+
+2019.08.27 - v2.3.6
+* Fix nuovo errore percorso strumento di backup.
+* Lo script di svecchiamento per NPrinting ora punta alla cartella corretta.
+
+2019.08.26 - v2.3.5
+* Nel caso ci sia più di un percorso per lo strumento di backup, prendere il primo di quelli esistenti.
+* Risolto errore nel caso si debba effettuare l'arresto di nessun servizio.
+
+2019.08.23 -v2.3.1
+* Il riavvio dei servizi del cluster e il backup ora gestiscono correttamente anche cluster formati da un singolo nodo.
+* Migliorata la gestione del percorso dello strumento di backup sia per Qlik Sense che NPrinting.
+
+2019.08.22 - v.2.3.0
+* L'importazione delle Security Rules è molto più user friendly.
+* Aggiunto controllo importazione Security Rules, regola per regola.
+* Cambiato testo dei pulsanti dell'interfaccia grafica.
+* Icona resa trasparente.
+
+2019.08.21 - v2.2.6
+* Miglioramento funzionalità importazione Security Rules.
+
+2019.08.21 - v2.2.5
+* Ora il controllo raggiungibilità sui nodi funziona correttamente.
+* Cambiato percorso cartella log e aggiunta data ai log per i riavvii.
+
+2019.08.20 - v2.2.4
+* Aggiunto controllo di raggiungibilità di tutti i nodi di un'installazione di Qlik Sense.
+
+2019.08.20 - v2.2.3
+* Risolto bug che effettuava l'avvio/arresto su una singola macchina invece che sull'intera lista di macchine.
+* [Publish-App] Aggiunto controllo presenza file qvf anche nella cartella d'appoggio.
+
+2019.08.19 - v2.2.1
+* Tutti gli script sono stati adatti per NPrinting.
+
+2019.08.13 - v2.1.1
+* Modulo QlikButlerToolbox più flessibile e completo, aggiunta funzione per avvio e arresto in remoto dei servizi.
+* Script di riavvio adattati per NPrinting.
+
+2019.08.13 - v2.0.9
+* Cambiata la variabile di riferimento per il modulo QlikButlerToolbox in modo più coerente.
+* Aggiunta gestione errori per avvio/arresto servizi.
+* Controllo presenza del servizio Repository Database prima di avviarlo quando si esegue il backup.
+
+2019.08.12 - v2.0.8
+* Lo script di installazione ora crea anche la cartella Logs, altrimenti lo script di backup non trovava la cartella per il file sonda.
+* L'avvio/arresto dei servizi non avviene più in parallelo ma in modo sequenziale, così da rendere più sicura e facilmente tracciabile (come log) l'operazione.
