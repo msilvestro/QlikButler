@@ -1,3 +1,6 @@
+2019.11.26 - v3.0.4
+* Miglioramento script di importazione app.
+
 2019.11.25 - 3.0.1
 * Creato file di configurazione System.config con tutte le utenze, le password e i percorsi necessari.
 

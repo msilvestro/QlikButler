@@ -16,41 +16,19 @@
 .NOTE
 
     Autori: Matteo Silvestro (Consoft S.p.A.)
-    Versione: 3.0.3
-    Ultimo aggiornamento: 26/11/2019
+    Versione: 3.0.5
+    Ultimo aggiornamento: 27/11/2019
 
 #>
 
-<#
+## Operazioni preliminari per il funzionamento dello script ##
 
-.SINOSSI
-    Mostra le informazioni salienti di un'app.
+# Ottieni la directory in cui è stato installato Qlik Butler.
+$InstallPath = [System.Environment]::GetEnvironmentVariable("QLIKBUTLER_PATH", [System.EnvironmentVariableTarget]::Machine)
+if (-not $InstallPath) { $InstallPath = "E:\Software\__PWSH" }
 
-.SINTASSI
-    Out-App [-App] <QlikApp>
-
-#>
-function Out-App {
-
-    [CmdletBinding()]
-    param (
-        $App
-    )
-
-    $App | Select-Object -Property id, name, createdDate, @{name = 'ownerName'; expression = { $_.owner.name }}, publishTime, published, @{name = 'sizeMB'; expression = { "{0:N2} MB" -f ($_.fileSize / 1MB)}}, @{name = 'streamName' ;expression = { $_.stream.name }}, lastReloadTime
-
-}
-
-function Clean-QlikFilter {
-
-    [CmdletBinding()]
-    param (
-        [string] $Filter
-    )
-
-    return $Filter.Replace("'", "\'")
-
-}
+# Importa le funzioni ausiliari per l'avvio e l'arresto dei servizi.
+Import-Module $InstallPath\QlikButler\Data\QlikButlerToolbox.psm1
 
 # Connessione all'ambiente.
 $FQDN = ([System.Net.Dns]::GetHostByName(($env:COMPUTERNAME))).Hostname
@@ -64,10 +42,42 @@ try {
 }
 
 
+<#
+
+.SINOSSI
+    Mostra le informazioni salienti di un'app.
+
+.SINTASSI
+    Out-App [-App] <QlikApp>
+
+#>
+function Out-App {
+
+    [CmdletBinding()]
+    param(
+        [parameter(Mandatory = $true, ValueFromPipeline = $true)]
+        $App
+    )
+
+    $App | Select-Object -Property id, name, createdDate, @{name = 'ownerName'; expression = { $_.owner.name }}, publishTime, published, @{name = 'sizeMB'; expression = { "{0:N2} MB" -f ($_.fileSize / 1MB)}}, @{name = 'streamName' ;expression = { $_.stream.name }}, lastReloadTime
+
+}
+
+function Clean-QlikFilter {
+
+    [CmdletBinding()]
+    param(
+        [parameter(Mandatory = $true, ValueFromPipeline = $true)]
+        [string] $Filter
+    )
+
+    return $Filter.Replace("'", "\'")
+
+}
+
 ## Importa app ##
 
 # Chiedi il nome del file qvf da importare.
-Add-Type -AssemblyName System.Windows.Forms
 $SourceAppPath = Get-FileByFileDialog -TypeFilter "App esportata (*.qvf)|*.qvf"
 if (-not $SourceAppPath) {
     exit
