@@ -186,9 +186,9 @@ GiorniSvecchiamento = 2
                 # I central di NPrinting non hanno gli strumenti specifici per Qlik Sense.
                 Copy-Item -Path $BasePath\QlikButlerFiles\Restart-NodeService.ps1, $BasePath\QlikButlerFiles\Restart-ClusterService.ps1, $BasePath\QlikButlerFiles\Restart-ClusterService.ps1, $BasePath\QlikButlerFiles\Backup-Cluster.ps1, $BasePath\QlikButlerFiles\Clean-BackupFiles.ps1, $BasePath\QlikButlerFiles\QlikButlerGUI.ps1, $BasePath\QlikButlerFiles\Start-Commands.ps1 -ToSession $Session -Destination $InstallPath\QlikButler
             }
-            # Copia il file di configurazione del sistema.
-            Copy-Item -Path $BasePath\Data\System.config -ToSession $Session -Destination $InstallPath\QlikButler\Data
         }
+        # Copia il file di configurazione del sistema.
+        Copy-Item -Path $BasePath\Data\System.config -ToSession $Session -Destination $InstallPath\QlikButler\Data
         Write-Host "`r`nQlik Butler installato in '$InstallPath\QlikButler\'."
 
         if (-not $NoConfig) {

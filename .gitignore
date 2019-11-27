@@ -2,3 +2,5 @@
 Data/System.config
 # Cluster list and cluster selection
 Data/*.csv
+# Parameters JSON
+Data/*.json

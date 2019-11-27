@@ -18,8 +18,8 @@
 .NOTE
 
     Autore: Matteo Silvestro (Consoft S.p.A.)
-    Versione: 3.0.1
-    Ultimo aggiornamento: 25/11/2019
+    Versione: 3.0.3
+    Ultimo aggiornamento: 26/11/2019
 
 #>
 
@@ -34,7 +34,7 @@
 #>
 function Import-ConfigFile {
 
-    param(
+    param (
         [string] $ConfigFile
     )
 
@@ -45,7 +45,7 @@ function Import-ConfigFile {
 
 function Split-ConfigLine {
 
-    param(
+    param (
         [string] $ConfigLine
     )
 
@@ -127,7 +127,7 @@ function Get-QlikAdminCredentials {
 function Start-QlikService {
     
     [CmdletBinding()]
-    param(
+    param (
         [Parameter(ValueFromPipeline)]
         [string] $Node,
         [string[]] $Services,
@@ -152,7 +152,7 @@ function Start-QlikService {
 
 function Start-LocalQlikService {
 
-    param(
+    param (
         [string[]] $Services,
         [string[]] $Exclude = @()
     )
@@ -202,7 +202,7 @@ function Start-LocalQlikService {
 function Stop-QlikService {
     
     [CmdletBinding()]
-    param(
+    param (
         [Parameter(ValueFromPipeline)]
         [string] $Node,
         [string[]] $Services,
@@ -227,7 +227,7 @@ function Stop-QlikService {
 
 function Stop-LocalQlikService {
 
-    param(
+    param (
         [string[]] $Services,
         [string[]] $Exclude = @()
     )
@@ -277,9 +277,10 @@ function Stop-LocalQlikService {
 
 #>
 function Test-WebPage {
-param(
-    [string] $Url
-)
+
+    param (
+        [string] $Url
+    )
 
     $Url = $Url.ToLower()
 
@@ -322,9 +323,10 @@ param(
 
 #>
 function Test-QlikSenseAccess {
-param(
-    [string] $ComputerName = $env:COMPUTERNAME
-)
+
+    param (
+        [string] $ComputerName = $env:COMPUTERNAME
+    )
 
     Return Test-WebPage -Url "https://$ComputerName/hub"
 
@@ -340,11 +342,38 @@ param(
 
 #>
 function Test-NPrintingAccess {
-param(
-    [string] $ComputerName = $env:computername
-)
+
+    param (
+        [string] $ComputerName = $env:computername
+    )
 
     Return Test-WebPage -Url "https://$($ComputerName):4993/"
+
+}
+
+function Get-FileByFileDialog {
+
+    param (
+        [string] $TypeFilter
+    )
+
+    Add-Type -AssemblyName System.Windows.Forms
+    $FileBrowser = New-Object System.Windows.Forms.OpenFileDialog -Property @{
+        InitialDirectory = [Environment]::GetFolderPath('MyDocuments');
+        Filter = $TypeFilter
+    }
+    $FileBrowserResult = $FileBrowser.ShowDialog()
+    if ($FileBrowserResult -eq "OK") {
+        $SourceAppPath = $FileBrowser.FileName
+        Write-Host "Selezionato il file '$SourceAppPath'."
+        return $SourceAppPath
+    } elseif ($FileBrowserResult -eq "Cancel") {
+        Write-Host "Operazione annullata."
+        return $false
+    } else {
+        Write-Host "Errore '$FileBrowserResult'."
+        return $false
+    }
 
 }
 
@@ -357,3 +386,4 @@ Export-ModuleMember -Function Stop-QlikService
 Export-ModuleMember -Function Test-WebPage
 Export-ModuleMember -Function Test-QlikSenseAccess
 Export-ModuleMember -Function Test-NPrintingAccess
+Export-ModuleMember -Function Get-FileByFileDialog

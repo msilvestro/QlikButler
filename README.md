@@ -18,10 +18,10 @@ The information needed are:
 Example file:
 ```
 Acronimo;Ambiente;Hostname;Installazione;TipoNodo
-ACRO0;Prod;hostname001;Qlik Sense;Central
-ACRO0;Prod;hostname002;Qlik Sense;Rim
-NPRI0;Labo;hostname003;NPrinting;Central
-NPRI0;Labo;hostname003;NPrinting;Rim
+QLK;Prod;hostname1;Qlik Sense;Central
+QLK;Prod;hostname2;Qlik Sense;Rim
+NPR;Labo;hostname3;NPrinting;Central
+NPR;Labo;hostname4;NPrinting;Rim
 ```
 
 ### System configuration
