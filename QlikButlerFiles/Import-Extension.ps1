@@ -26,7 +26,7 @@ if (-not $InstallPath) { $InstallPath = "E:\Software\__PWSH" }
 Import-Module $InstallPath\QlikButler\Data\QlikButlerToolbox.psm1
 
 # Connessione all'ambiente.
-$FQDN = ([System.Net.Dns]::GetHostByName(($env:COMPUTERNAME))).Hostname
+$FQDN = ([System.Net.Dns]::GetHostByName($env:COMPUTERNAME)).Hostname
 try {
     $Domain = (Get-ADDomain).NetBIOSName
     Connect-Qlik -ComputerName $FQDN -UseDefaultCredentials -TrustAllCerts | Out-Null

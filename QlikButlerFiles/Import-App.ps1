@@ -16,12 +16,12 @@
 .NOTE
 
     Autori: Matteo Silvestro (Consoft S.p.A.)
-    Versione: 3.0.5
-    Ultimo aggiornamento: 27/11/2019
+    Versione: 3.0.6
+    Ultimo aggiornamento: 28/11/2019
 
 #>
 
-## Operazioni preliminari per il funzionamento dello script ##
+#region ## Operazioni preliminari per il funzionamento dello script ##
 
 # Ottieni la directory in cui è stato installato Qlik Butler.
 $InstallPath = [System.Environment]::GetEnvironmentVariable("QLIKBUTLER_PATH", [System.EnvironmentVariableTarget]::Machine)
@@ -31,7 +31,7 @@ if (-not $InstallPath) { $InstallPath = "E:\Software\__PWSH" }
 Import-Module $InstallPath\QlikButler\Data\QlikButlerToolbox.psm1
 
 # Connessione all'ambiente.
-$FQDN = ([System.Net.Dns]::GetHostByName(($env:COMPUTERNAME))).Hostname
+$FQDN = ([System.Net.Dns]::GetHostByName($env:COMPUTERNAME)).Hostname
 try {
     $Domain = (Get-ADDomain).NetBIOSName
     Connect-Qlik -ComputerName $FQDN -UseDefaultCredentials -TrustAllCerts | Out-Null
@@ -40,7 +40,6 @@ try {
     if (-not $psise) { Read-Host "`r`nPremere invio per chiudere" }
     exit
 }
-
 
 <#
 
@@ -75,7 +74,9 @@ function Clean-QlikFilter {
 
 }
 
-## Importa app ##
+#endregion
+
+#region ## Importa app ##
 
 # Chiedi il nome del file qvf da importare.
 $SourceAppPath = Get-FileByFileDialog -TypeFilter "App esportata (*.qvf)|*.qvf"
@@ -85,31 +86,23 @@ if (-not $SourceAppPath) {
 
 # Chiedi il nome dell'app che verrà importata.
 $FileName = (Get-ChildItem $SourceAppPath).BaseName
-$SourceAppName = Read-Host "Inserire il nome dell'app che verrà importata (lasciare vuoto per chiamarla '$FileName')"
-if ($SourceAppName -eq "") {
-    $SourceAppName = $FileName
-}
 
-# Controlla la presenza di altre app con lo stesso nome.
-$SourceFilter = "name eq '$($SourceAppName | Clean-QlikFilter)' and published eq false"
+# Controlla la presenza di altre app con lo stesso nome, in tal caso aggiungi un numero progressivo alla fine del nome file.
+$SourceAppName = $FileName | Clean-QlikFilter
+$SourceFilter = "name eq '$SourceAppName' and published eq false"
+$Tail = 0
 while ((Get-QlikApp -filter $SourceFilter).count -ne 0) {
-    $Risposta = Read-Host "L'app chiamata '$SourceAppName' esiste già. [C = Cancella, R = Rinomina, altrimenti annulla]"
-    if ($Risposta -eq "C") {
-        Get-QlikApp -filter $SourceFilter | Remove-QlikApp
-    } elseif ($Risposta -eq "R") {
-        $SourceAppName = ""
-        while ($SourceAppName -eq "") {
-            $SourceAppName = Read-Host "Inserire il nuovo nome dell'app"
-        }
-        $SourceFilter = "name eq '$($SourceAppName | Clean-QlikFilter)' and published eq false"
-    } else {
-        throw "L'app '$SourceAppName' esiste già."
-    }
+    $Tail += 1
+    $SourceFilter = "name eq '$($SourceAppName)_$Tail' and published eq false"
+}
+if ($Tail -ge 0) {
+    $SourceAppName = "$($SourceAppName)_$Tail"
+    Write-Host "App rinominata in '$SourceAppName'."
 }
 
 # Importa l'app sorgente.
 Write-Host "`r`n`r`nImportazione app" -BackgroundColor DarkCyan
-$SourceApp = Import-QlikApp -file $SourceAppPath -name $SourceAppName -upload
+$SourceApp = (Import-QlikApp -file $SourceAppPath -name $SourceAppName -upload).Content | ConvertFrom-Json
 
 # Cambia l'owner.
 $OriginalOwner = $SourceApp.owner.name
@@ -119,13 +112,14 @@ while (($Owner -ne "") -and (@(Get-QlikUser -filter "name eq '$Owner'").count -n
     $Owner = Read-Host "Inserire il nuovo owner dell'app (lasciare vuoto per mantenere '$OriginalOwner')"
 }
 if ($Owner -eq "") { $Owner = $OriginalOwner }
-$SourceApp = Update-QlikApp -id $SourceApp.id -ownername $Owner
+$SourceApp = Update-QlikApp -id $SourceApp.id -owner (Get-QlikUser -filter "name eq '$Owner'")
 
 Write-Host "App importata" -ForegroundColor DarkCyan
 $SourceApp | Out-App
 
+#endregion
 
-## Pubblica app ##
+#region ## Pubblica app ##
 
 # Chiedi il nome dell'app target e lo stream su cui verrà pubblicato.
 $TargetAppName = Read-Host "Inserire il nome dell'app che verrà pubblicata"
@@ -163,6 +157,9 @@ if (@($TargetApp).count -eq 0) {
 } elseif (@($TargetApp).count -gt 1) {
 
     # C) Ci sono almeno due app che corrispondono ai criteri, caso estremo che però pregiudica l'esecuzione dell'import.
-    throw "L'app '$TargetAppName' sullo stream '$TargetAppStream' non è univoca."
+    Write-Host "L'app '$TargetAppName' sullo stream '$TargetAppStream' non è univoca."
+    exit
 
 }
+
+#endregion
