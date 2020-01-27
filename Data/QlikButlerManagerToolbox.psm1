@@ -59,23 +59,33 @@ function Get-EnabledQlikServices {
     
     param(
         [string] $Hostname,
-        [string] $NodeType,
+        [string] $CentralNode,
         $Credentials
     )
 
-    Invoke-Command -ComputerName $Hostname -Credential $Credentials -ScriptBlock {
+    # i servizi abilitati del cluster sono sempre tutti per definizione.
+    if ($Hostname -eq $CentralNode) {
+        return @(
+            "QlikSenseRepositoryDatabase",
+            "QlikSenseRepositoryService",
+            "QlikSenseProxyService",
+            "QlikSenseEngineService",
+            "QlikSenseSchedulerService",
+            "QlikSensePrintingService",
+            "QlikSenseServiceDispatcher"
+        )
+    }
+
+    Invoke-Command -ComputerName $CentralNode -Credential $Credentials -ScriptBlock {
         param(
-            [string] $Hostname,
-            [string] $NodeType
+            [string] $Hostname
         )
 
         try {
-            Connect-Qlik $Hostname -TrustAllCerts -UseDefaultCredentials | Out-Null
+            $CentralFQDN = ([System.Net.Dns]::GetHostByName($env:COMPUTERNAME)).Hostname
+            Connect-Qlik $CentralFQDN -TrustAllCerts -UseDefaultCredentials | Out-Null
             $NodeConfiguration = Get-QlikNode -filter "hostName sw '$Hostname'" -full
             $QlikServices = @()
-            if ($NodeType -eq "Central") {
-                $QlikServices += "QlikSenseRepositoryDatabase"
-            }
             $QlikServices += "QlikSenseRepositoryService"            
             if ($NodeConfiguration.proxyEnabled) {
             $QlikServices += "QlikSenseProxyService"
@@ -106,7 +116,7 @@ function Get-EnabledQlikServices {
             }
         }
         $QlikServices
-    } -ArgumentList $Hostname, $NodeType
+    } -ArgumentList $Hostname
 
 }
 
@@ -199,7 +209,7 @@ GiorniSvecchiamento = 2
             Write-Host " ha i seguenti servizi abilitati:"
             # Ottieni i servizi di Qlik Sense abilitati sul nodo.
             if ($InstallationType -eq "Qlik Sense") {
-                $Services = (Get-EnabledQlikServices -Hostname $_.Hostname -NodeType $NodeType -Credentials $QlikAdminCredentials) -join ", "
+                $Services = (Get-EnabledQlikServices -Hostname $_.Hostname -CentralNode $ClusterCentral -Credentials $QlikAdminCredentials) -join ", "
             } elseif ($InstallationType -eq "NPrinting") {
                 $Services = (Invoke-Command -ComputerName $_.Hostname -Credential $QlikAdminCredentials -ScriptBlock {
                     $QlikServices = @()
@@ -823,3 +833,4 @@ Export-ModuleMember Test-WebPage
 Export-ModuleMember Test-QlikSenseAccess
 Export-ModuleMember Test-NPrintingAccess
 Export-ModuleMember Get-QlikAdminCredentials
+Export-ModuleMember Get-EnabledQlikServices

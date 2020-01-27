@@ -1,3 +1,8 @@
+2019.01.27 - v3.0.6
+* Introduzione comando per gestione servizi superflui.
+* Implementazione import multiplo app.
+* Implementazione backup manuale locale.
+
 2019.11.26 - v3.0.4
 * Miglioramento script di importazione app.
 

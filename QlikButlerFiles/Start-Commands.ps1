@@ -7,13 +7,16 @@
 .DESCRIZIONE
 
     Lo script esegue alcuni comandi minori, in particolare:
-    * Imposta tutti i servizi in manual
+    * Imposta tutti i servizi in manual.
+    * Imposta tutti i servizi in automatic.
+    * Arresta e disabilita servizi superflui.
+    * Installa Qlik Cli.
 
 .NOTE
 
     Autori: Matteo Silvestro (Consoft S.p.A.)
-    Versione: 2.6.0
-    Ultimo aggiornamento: 11/11/2019
+    Versione: 3.0.6
+    Ultimo aggiornamento: 27/01/2020
 
 #>
 
@@ -25,7 +28,7 @@ param(
 $InstallPath = [System.Environment]::GetEnvironmentVariable("QLIKBUTLER_PATH", [System.EnvironmentVariableTarget]::Machine)
 if (-not $InstallPath) { $InstallPath = "E:\Software\__PWSH" }
 
-Write-Host $Command
+Write-Host $Command -BackgroundColor DarkCyan
 
 # Importa le funzioni ausiliari per l'avvio e l'arresto dei servizi.
 Import-Module $InstallPath\QlikButler\Data\QlikButlerToolbox.psm1
@@ -43,6 +46,35 @@ if ($Command -eq "Imposta tutti i servizi in manual") {
         Set-Service -Name $Service -StartupType Automatic
         $StartMode = (Get-WmiObject -Class Win32_Service -Property StartMode -Filter "Name='$Service'").StartMode
         Write-Output "-> $Service in modalità: $StartMode."
+    }
+} elseif ($Command -eq "Arresta e disabilita servizi superflui") {
+    # Ottieni solo i servizi che sono avviati ma non dovrebbero esserlo (perché disabilitati nella configurazione della QMC).
+    $QlikServices = @()
+    @(
+        "QlikSenseRepositoryDatabase",
+        "QlikSenseRepositoryService",
+        "QlikSenseProxyService",
+        "QlikSenseEngineService",
+        "QlikSenseSchedulerService",
+        "QlikSensePrintingService",
+        "QlikSenseServiceDispatcher",
+        "QlikLoggingService"
+    ) |  where { $_ -notin (Get-QlikService) } | foreach {
+        $Service = Get-Service -Include $_ | where { $_.Status -eq "Running" }
+        if ($Service) { $QlikServices += $Service.Name }
+    }
+    # Disabilita e arresta i servizi non pertinenti.
+    $QlikServices | foreach {
+        $Service = $_
+        Write-Output "Arresto servizio $Service..."
+        try {
+            Set-Service -Name $Service -StartupType Disable
+            Stop-Service -Name $Service -Force -ErrorAction Stop
+        } catch {
+            Write-Output "! Errore nell'arresto del servizio."
+        }
+        $Status = (Get-Service -Name $Service).Status
+        Write-Output "-> $Service in stato: $Status."
     }
 } elseif ($Command -eq "Installa Qlik Cli") {
     Add-Type -AssemblyName System.IO.Compression.FileSystem -ErrorAction Stop

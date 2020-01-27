@@ -17,11 +17,11 @@
 
     Autori: Matteo Silvestro (Consoft S.p.A.)
     Versione: 3.0.6
-    Ultimo aggiornamento: 28/11/2019
+    Ultimo aggiornamento: 27/11/2019
 
 #>
 
-#region ## Operazioni preliminari per il funzionamento dello script ##
+## Operazioni preliminari per il funzionamento dello script ##
 
 # Ottieni la directory in cui è stato installato Qlik Butler.
 $InstallPath = [System.Environment]::GetEnvironmentVariable("QLIKBUTLER_PATH", [System.EnvironmentVariableTarget]::Machine)
@@ -74,92 +74,125 @@ function Clean-QlikFilter {
 
 }
 
-#endregion
+## Importa app ##
 
-#region ## Importa app ##
 
-# Chiedi il nome del file qvf da importare.
-$SourceAppPath = Get-FileByFileDialog -TypeFilter "App esportata (*.qvf)|*.qvf"
-if (-not $SourceAppPath) {
-    exit
-}
+function Start-ImportPublishApp {
+    param(
+        [string] $SourceAppPath,
+        [string] $Owner = "",
+        [string] $TargetAppName = "",
+        [string] $TargetAppStream = ""
+    )
 
-# Chiedi il nome dell'app che verrà importata.
-$FileName = (Get-ChildItem $SourceAppPath).BaseName
+    # Chiedi il nome dell'app che verrà importata.
+    $FileName = (Get-ChildItem $SourceAppPath).BaseName
 
-# Controlla la presenza di altre app con lo stesso nome, in tal caso aggiungi un numero progressivo alla fine del nome file.
-$SourceAppName = $FileName | Clean-QlikFilter
-$SourceFilter = "name eq '$SourceAppName' and published eq false"
-$Tail = 0
-while ((Get-QlikApp -filter $SourceFilter).count -ne 0) {
-    $Tail += 1
-    $SourceFilter = "name eq '$($SourceAppName)_$Tail' and published eq false"
-}
-if ($Tail -ge 0) {
-    $SourceAppName = "$($SourceAppName)_$Tail"
-    Write-Host "App rinominata in '$SourceAppName'."
-}
+    # Controlla la presenza di altre app con lo stesso nome, in tal caso aggiungi un numero progressivo alla fine del nome file.
+    if (($TargetAppStream -eq "") -and ($TargetAppName -ne "")) {
+        # Se viene specificato il nome dell'app target ma non lo stream, rinomina semplicemente l'app - non verrà poi effettuata la pubblicazione.
+        $SourceAppName = $TargetAppName
+    } else {
+        # Nel caso standard chiama l'app con il nome del QVF.
+        $SourceAppName = $FileName | Clean-QlikFilter
+    }
+    $SourceFilter = "name eq '$SourceAppName' and published eq false"
+    $Tail = 0
+    while ((Get-QlikApp -filter $SourceFilter).count -ne 0) {
+        $Tail += 1
+        $SourceFilter = "name eq '$($SourceAppName)_$Tail' and published eq false"
+    }
+    if ($Tail -ge 0) {
+        $SourceAppName = "$($SourceAppName)_$Tail"
+        Write-Host "App rinominata in '$SourceAppName'."
+    }
 
-# Importa l'app sorgente.
-Write-Host "`r`n`r`nImportazione app" -BackgroundColor DarkCyan
-$SourceApp = (Import-QlikApp -file $SourceAppPath -name $SourceAppName -upload).Content | ConvertFrom-Json
+    # Importa l'app sorgente.
+    Write-Host "`r`n`r`nImportazione app" -BackgroundColor DarkCyan
+    $SourceApp = (Import-QlikApp -file $SourceAppPath -name $SourceAppName -upload).Content | ConvertFrom-Json
 
-# Cambia l'owner.
-$OriginalOwner = $SourceApp.owner.name
-$Owner = Read-Host "Inserire il nuovo owner dell'app (lasciare vuoto per mantenere '$OriginalOwner')"
-while (($Owner -ne "") -and (@(Get-QlikUser -filter "name eq '$Owner'").count -ne 1)) {
-    Write-Output "Impossibile trovare un'utenza univoca con il nome '$Owner'."
-    $Owner = Read-Host "Inserire il nuovo owner dell'app (lasciare vuoto per mantenere '$OriginalOwner')"
-}
-if ($Owner -eq "") { $Owner = $OriginalOwner }
-$SourceApp = Update-QlikApp -id $SourceApp.id -owner (Get-QlikUser -filter "name eq '$Owner'")
+    # Cambia l'owner.
+    $OriginalOwner = $SourceApp.owner.name
+    if (@(Get-QlikUser -filter "name eq '$Owner'").count -ne 1) {
+        Write-Output "Impossibile trovare un'utenza univoca con il nome '$Owner'."
+        $Owner = ""
+    }
+    if ($Owner -eq "") {
+        $Owner = $OriginalOwner
+        Write-Output "Il proprietario '$Owner' è rimasto invariato."
+    } else {
+        $SourceApp = Update-QlikApp -id $SourceApp.id -owner (Get-QlikUser -filter "name eq '$Owner'")
+        Write-Output "Il nuovo proprietario dell'app è '$Owner'."
+    }
 
-Write-Host "App importata" -ForegroundColor DarkCyan
-$SourceApp | Out-App
+    Write-Host "App importata" -ForegroundColor DarkCyan
+    $SourceApp | Out-App
 
-#endregion
 
-#region ## Pubblica app ##
+    ## Pubblica app ##
 
-# Chiedi il nome dell'app target e lo stream su cui verrà pubblicato.
-$TargetAppName = Read-Host "Inserire il nome dell'app che verrà pubblicata"
-$TargetAppStream = Read-Host "Inserire il nome dello stream su cui effettuare la pubblicazione"
-while (@(Get-QlikStream -filter "name eq '$TargetAppStream'").count -ne 1) {
-    Write-Output "Lo stream '$TargetAppStream' non esiste."
-    $TargetAppStream = Read-Host "Inserire il nome dello stream su cui effettuare la pubblicazione"
-}
-$TargetFilter = "name eq '$($TargetAppName.Replace("'", "\'"))' and stream.name eq '$TargetAppStream'"
+    if ($TargetAppStream -eq "") {
+        # Se non viene specificata lo stream su cui pubblicare l'app, non effettuare la pubblicazione.
+        exit
+    }
 
-$TargetApp = Get-QlikApp -filter $TargetFilter -full
-# In base al numero di app target trovate, esegui diverse azioni.
-if (@($TargetApp).count -eq 0) {
+    # Chiedi il nome dell'app target e lo stream su cui verrà pubblicato.
+    $TargetFilter = "name eq '$($TargetAppName.Replace("'", "\'"))' and stream.name eq '$TargetAppStream'"
 
-    # A) Non ci sono app con quel nome nello stream, stiamo quindi eseguendo una pubblicazione ex novo.
-    Write-Host "L'app '$TargetAppName' sullo stream '$TargetAppStream' non esiste, l'app sorgente verrà pubblicata ex novo."
-    if ((Read-Host -Prompt "Pubblicare l'app? [S] Sì [N] No (Default 'N')") -ne "S") { exit }
+    $TargetApp = Get-QlikApp -filter $TargetFilter -full
+    # In base al numero di app target trovate, esegui diverse azioni.
+    if (@($TargetApp).count -eq 0) {
 
-    # Esegui la pubblicazione.
-    Write-Host "`r`nPubblicazione app" -ForegroundColor DarkCyan
-    Publish-QlikApp -id $SourceApp.id -name $TargetAppName -stream $TargetAppStream | Out-Null
-    Get-QlikApp -filter $TargetFilter -full | Out-App
+        # A) Non ci sono app con quel nome nello stream, stiamo quindi eseguendo una pubblicazione ex novo.
+        Write-Host "L'app '$TargetAppName' sullo stream '$TargetAppStream' non esiste, l'app sorgente verrà pubblicata ex novo."
+        #if ((Read-Host -Prompt "Pubblicare l'app? [S] Sì [N] No (Default 'N')") -ne "S") { exit }
 
-} elseif (@($TargetApp).count -eq 1) {
+        # Esegui la pubblicazione.
+        Write-Host "`r`nPubblicazione app" -ForegroundColor DarkCyan
+        Publish-QlikApp -id $SourceApp.id -name $TargetAppName -stream $TargetAppStream | Out-Null
+        Get-QlikApp -filter $TargetFilter -full | Out-App
 
-    # B) C'è già un'app con quel nome nello stream, stiamo quindi eseguendo una pubblicazione con replace.
-    Write-Host "L'app '$TargetAppName' sullo stream '$TargetAppStream' esiste, l'app sorgente verrà pubblicata con replace su di essa."
-    if ((Read-Host -Prompt "Pubblicare l'app? [S] Sì [N] No (Default 'N')") -ne "S") { exit }
+    } elseif (@($TargetApp).count -eq 1) {
 
-    # Esegui il replace.
-    Write-Host "`r`nPubblicazione app" -ForegroundColor DarkCyan
-    Switch-QlikApp -id $SourceApp.id -appId $TargetApp.id | Out-Null
-    Get-QlikApp -filter $TargetFilter -full | Out-App
+        # B) C'è già un'app con quel nome nello stream, stiamo quindi eseguendo una pubblicazione con replace.
+        Write-Host "L'app '$TargetAppName' sullo stream '$TargetAppStream' esiste, l'app sorgente verrà pubblicata con replace su di essa."
+        #if ((Read-Host -Prompt "Pubblicare l'app? [S] Sì [N] No (Default 'N')") -ne "S") { exit }
+
+        # Esegui il replace.
+        Write-Host "`r`nPubblicazione app" -ForegroundColor DarkCyan
+        Switch-QlikApp -id $SourceApp.id -appId $TargetApp.id | Out-Null
+        Get-QlikApp -filter $TargetFilter -full | Out-App
     
-} elseif (@($TargetApp).count -gt 1) {
+    } elseif (@($TargetApp).count -gt 1) {
 
-    # C) Ci sono almeno due app che corrispondono ai criteri, caso estremo che però pregiudica l'esecuzione dell'import.
-    Write-Host "L'app '$TargetAppName' sullo stream '$TargetAppStream' non è univoca."
-    exit
+        # C) Ci sono almeno due app che corrispondono ai criteri, caso estremo che però pregiudica l'esecuzione dell'import.
+        Write-Host "L'app '$TargetAppName' sullo stream '$TargetAppStream' non è univoca."
+        exit
+
+    }
 
 }
 
-#endregion
+## 
+$SourceAppPaths = Get-FileByFileDialog -TypeFilter "App esportata (*.qvf)|*.qvf" -Multiselect
+
+$SourceAppPaths | foreach {
+    $FileName = (Get-ChildItem $_).BaseName
+    Write-Host "`r`n$FileName" -BackgroundColor DarkCyan
+    $OriginalOwner = $SourceApp.owner.name
+    $Owner = Read-Host "Inserire il nuovo owner dell'app (vuoto per lasciarlo invariato)"
+    while (($Owner -ne "") -and (@(Get-QlikUser -filter "name eq '$Owner'").count -ne 1)) {
+        Write-Output "Impossibile trovare un'utenza univoca con il nome '$Owner'."
+        $Owner = Read-Host "Inserire il nuovo owner dell'app (vuoto per lasciarlo invariato)"
+    }
+
+    $TargetAppName = Read-Host "Inserire il nome dell'app che verrà pubblicata"
+    $TargetAppStream = Read-Host "Inserire il nome dello stream su cui effettuare la pubblicazione"
+
+    while (@(Get-QlikStream -filter "name eq '$TargetAppStream'").count -ne 1) {
+        Write-Output "Lo stream '$TargetAppStream' non esiste."
+        $TargetAppStream = Read-Host "Inserire il nome dello stream su cui effettuare la pubblicazione"
+    }
+
+    Start-ImportPublishApp -SourceAppPath $_ -Owner $Owner -TargetAppName $TargetAppName -TargetAppStream $TargetAppStream
+}

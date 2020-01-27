@@ -16,13 +16,13 @@
 .NOTE
 
     Autori: Matteo Silvestro (Consoft S.p.A.)
-    Versione: 3.0.0
-    Ultimo aggiornamento: 22/11/2019
+    Versione: 3.0.6
+    Ultimo aggiornamento: 23/01/2020
 
 #>
 
 param(
-    [switch] $OnlyBackup = $false
+    [switch] $ManualBackup = $false
 )
 
 ### Preparazione variabili necessarie per lo script ###
@@ -56,7 +56,11 @@ if ($InstallationType -eq "Qlik Sense") {
 
 # File di log e backup.
 $Date = Get-Date -UFormat "%Y_%m_%d__%H_%M_%S"
-$BackupRoot = $SystemConfig.BackupRoot
+if ($ManualBackup) {
+    $BackupRoot = Get-FolderByFileDialog
+} else {
+    $BackupRoot = $SystemConfig.BackupRoot
+}
 $BackupPath = "$BackupRoot\$ClusterName"
 if (-not (Test-Path $BackupPath)) { New-Item -Path $BackupPath -ItemType Directory | Out-Null }
 $LogPath = "$BackupRoot\$ClusterName\Logs"
@@ -106,7 +110,7 @@ Write-Output "# Inizio procedura backup sul cluster $ClusterName."
 ### Arresto servizi ###
 
 # Arresta tutti i servizi, prima sui rim e poi sui central (a meno che non si voglia eseguire solo il backup).
-if (-not $OnlyBackup) {
+if (-not $ManualBackup) {
     $ClusterRim | Stop-QlikService
 
     $ClusterCentral | Stop-QlikService -Exclude $ExcludedService
@@ -197,7 +201,7 @@ if (($BackupSuccess) -and (Test-Path $BackupFile) -and ((Get-Item $BackupFile).L
     "! Backup $Acronimo$Ambiente fallito!" | Out-File -FilePath $Sonda
 }
 
-if ($OnlyBackup) {
+if ($ManualBackup) {
     # Se si vuole eseguire il solo backup, termina lo script in questo punto.
     Stop-Transcript
     exit
