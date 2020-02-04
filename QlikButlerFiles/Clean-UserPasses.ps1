@@ -6,7 +6,7 @@
 
 .NOTE
 
-    Autori: Matteo Silvestro (Consoft S.p.A.), Levi Turner
+    Autori: Matteo Silvestro, Levi Turner
     Versione: 3.0.2
     Ultimo aggiornamento: 25/11/2019
     Basato su: qlik_sense_purge_unused_user_access_passes.ps1 <https://github.com/levi-turner/QlikSenseScripts/blob/master/qlik_sense_purge_unused_user_access_passes.ps1>

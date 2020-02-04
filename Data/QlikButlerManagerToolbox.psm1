@@ -13,9 +13,9 @@
 
 .NOTE
 
-    Autori: Matteo Silvestro (Consoft S.p.A.)
-    Versione: 3.0.4
-    Ultimo aggiornamento: 25/11/2019
+    Autori: Matteo Silvestro
+    Versione: 3.0.8
+    Ultimo aggiornamento: 04/02/2020
 
 #>
 
@@ -378,6 +378,10 @@ Servizi = $Services
 					New-QlikButlerMonthlyTask -TaskName "$($Acronimo)_$($Ambiente) - Svecchiamento Licenze" -TaskDescription "Rimuovi i token delle licenze associate agli utenti che non hanno eseguito accesso negli ultimi 90 giorni." -DaysOfMonth 1 -At "04:00" -Path "$InstallPath\QlikButler\Clean-UserPasses.ps1"
                     Write-Host "Creata la schedulazione " -NoNewline
                     Write-Host "$($Acronimo)_$($Ambiente) - Svecchiamento Licenze" -ForegroundColor Yellow -NoNewline
+                    Write-Host "."
+                    New-QlikButlerDailyTask -TaskName "$($Acronimo)_$($Ambiente) - Pulizia lista utenti" -TaskDescription "Rimuovi gli utenti non attivi e disabilitati, per il GDPR." -At "6:00 AM" -Path "$InstallPath\QlikButler\Clean-UserList.ps1"
+                    Write-Host "Creata la schedulazione " -NoNewline
+                    Write-Host "$($Acronimo)_$($Ambiente) - Pulizia lista utenti" -ForegroundColor Yellow -NoNewline
                     Write-Host "."
                 }
             }

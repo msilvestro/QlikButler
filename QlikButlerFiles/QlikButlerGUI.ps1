@@ -10,9 +10,9 @@
 
 .NOTE
 
-    Autori: Matteo Silvestro (Consoft S.p.A.)
-    Versione: 3.0.7
-    Ultimo aggiornamento: 29/01/2020
+    Autore: Matteo Silvestro
+    Versione: 3.0.8
+    Ultimo aggiornamento: 04/02/2020
 
 #>
 
@@ -30,7 +30,7 @@ $ButtonHeight = 50           # altezza dei pulsanti
 $ServicesButtonWidth = 84    # lunghezza dei pulsanti per la gestione dei servizi
 $CommandsButtonWidth = 172   # lunghezza dei pulsanti per l'esecuzione dei comandi
 $ServicesTextBoxHeight = 150 # altezza dell'area di testo che mostra lo stato dei servizi
-$AvailableCommands = @("Imposta tutti i servizi in manual", "Imposta tutti i servizi in automatic", "Avvia solo repository", "Arresta e disabilita servizi superflui", "Installa Qlik Cli")
+$AvailableCommands = @("Imposta tutti i servizi in manual", "Imposta tutti i servizi in automatic", "Avvia solo repository", "Arresta e disabilita servizi superflui", "Installa Qlik Cli", "Pulisci lista utenti")
 
 # Ottieni la directory in cui è stato installato Qlik Butler.
 $InstallPath = [System.Environment]::GetEnvironmentVariable("QLIKBUTLER_PATH", [System.EnvironmentVariableTarget]::Machine)
@@ -218,6 +218,8 @@ $ExecuteCommandButton.Add_Click({
         } else {
             Start-PowerShellScript -ScriptFile "Restart-NodeService" -Arguments " -OnlyStart -Services 'QlikNPrintingRepoService'"
         }
+    } elseif ($CommandComboBox.SelectedValue -eq "Pulisci lista utenti") {
+        Start-PowerShellScript -ScriptFile "Clean-UserList"
     } else {
         Start-PowerShellScript -ScriptFile "Start-Commands" -Arguments " -Command '$($CommandComboBox.SelectedValue)'"
     }

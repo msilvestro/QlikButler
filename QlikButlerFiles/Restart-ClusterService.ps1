@@ -13,7 +13,7 @@
 
 .NOTE
 
-    Autori: Matteo Silvestro (Consoft S.p.A.)
+    Autore: Matteo Silvestro
     Versione: 3.0.0
     Ultimo aggiornamento: 22/11/2019
 

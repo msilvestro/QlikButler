@@ -3,6 +3,7 @@
     [string] $Ambiente,
     [string] $InstallationType
 )
+
 # Ottieni la directory da cui è stato lanciato lo script.
 $ScriptPath = if ($psise) { Split-Path $psise.CurrentFile.FullPath } else { $PSScriptRoot }
 
