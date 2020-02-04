@@ -16,8 +16,8 @@
 .NOTE
 
     Autori: Matteo Silvestro (Consoft S.p.A.)
-    Versione: 3.0.6
-    Ultimo aggiornamento: 23/01/2020
+    Versione: 3.0.7
+    Ultimo aggiornamento: 29/01/2020
 
 #>
 
@@ -57,7 +57,7 @@ if ($InstallationType -eq "Qlik Sense") {
 # File di log e backup.
 $Date = Get-Date -UFormat "%Y_%m_%d__%H_%M_%S"
 if ($ManualBackup) {
-    $BackupRoot = Get-FolderByFileDialog
+    $BackupRoot = Get-FolderByFolderDialog
 } else {
     $BackupRoot = $SystemConfig.BackupRoot
 }

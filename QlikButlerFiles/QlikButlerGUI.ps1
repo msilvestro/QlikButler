@@ -11,8 +11,8 @@
 .NOTE
 
     Autori: Matteo Silvestro (Consoft S.p.A.)
-    Versione: 3.0.6
-    Ultimo aggiornamento: 27/01/2020
+    Versione: 3.0.7
+    Ultimo aggiornamento: 29/01/2020
 
 #>
 
@@ -30,7 +30,7 @@ $ButtonHeight = 50           # altezza dei pulsanti
 $ServicesButtonWidth = 84    # lunghezza dei pulsanti per la gestione dei servizi
 $CommandsButtonWidth = 172   # lunghezza dei pulsanti per l'esecuzione dei comandi
 $ServicesTextBoxHeight = 150 # altezza dell'area di testo che mostra lo stato dei servizi
-$AvailableCommands = @("Imposta tutti i servizi in manual", "Imposta tutti i servizi in automatic", "Avvia solo Qlik Sense Repository Database", "Arresta e disabilita servizi superflui", "Installa Qlik Cli")
+$AvailableCommands = @("Imposta tutti i servizi in manual", "Imposta tutti i servizi in automatic", "Avvia solo repository", "Arresta e disabilita servizi superflui", "Installa Qlik Cli")
 
 # Ottieni la directory in cui è stato installato Qlik Butler.
 $InstallPath = [System.Environment]::GetEnvironmentVariable("QLIKBUTLER_PATH", [System.EnvironmentVariableTarget]::Machine)
@@ -212,8 +212,12 @@ $ExecuteCommandButton.Location = New-Object System.Drawing.Point($MarginLeft, $M
 $ExecuteCommandButton.Size = New-Object System.Drawing.Size($ServicesButtonWidth, $CommandComboBox.Height)
 $ExecuteCommandButton.Text = "Esegui"
 $ExecuteCommandButton.Add_Click({
-    if ($CommandComboBox.SelectedValue -eq "Avvia solo Qlik Sense Repository Database") {
-        Start-PowerShellScript -ScriptFile "Restart-NodeService" -Arguments " -OnlyStart -Services 'QlikSenseRepositoryDatabase'"
+    if ($CommandComboBox.SelectedValue -eq "Avvia solo repository") {
+        if (-not $NPrintingCluster) {
+            Start-PowerShellScript -ScriptFile "Restart-NodeService" -Arguments " -OnlyStart -Services 'QlikSenseRepositoryDatabase'"
+        } else {
+            Start-PowerShellScript -ScriptFile "Restart-NodeService" -Arguments " -OnlyStart -Services 'QlikNPrintingRepoService'"
+        }
     } else {
         Start-PowerShellScript -ScriptFile "Start-Commands" -Arguments " -Command '$($CommandComboBox.SelectedValue)'"
     }

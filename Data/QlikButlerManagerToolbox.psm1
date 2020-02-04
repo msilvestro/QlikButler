@@ -19,7 +19,9 @@
 
 #>
 
-$BasePath = "E:\Software\__PWSH\QlikButlerManager\"
+$InstallPath = [System.Environment]::GetEnvironmentVariable("QLIKBUTLER_PATH", [System.EnvironmentVariableTarget]::Machine)
+if (-not $InstallPath) { $InstallPath = "E:\Software\__PWSH" }
+$BasePath = "$InstallPath\QlikButlerManager\"
 
 <#
 
@@ -88,16 +90,16 @@ function Get-EnabledQlikServices {
             $QlikServices = @()
             $QlikServices += "QlikSenseRepositoryService"            
             if ($NodeConfiguration.proxyEnabled) {
-            $QlikServices += "QlikSenseProxyService"
+                $QlikServices += "QlikSenseProxyService"
             }
             if ($NodeConfiguration.engineEnabled) {
-            $QlikServices += "QlikSenseEngineService"
+                $QlikServices += "QlikSenseEngineService"
             }
             if ($NodeConfiguration.schedulerEnabled) {
-            $QlikServices += "QlikSenseSchedulerService"
+                $QlikServices += "QlikSenseSchedulerService"
             }
             if ($NodeConfiguration.printingEnabled) {
-            $QlikServices += "QlikSensePrintingService"
+                $QlikServices += "QlikSensePrintingService"
             }
             $QlikServices += "QlikSenseServiceDispatcher"
         } catch {
@@ -397,6 +399,9 @@ Servizi = $Services
                 }
             }
             Write-Host "Creata scorciatoia per l'interfaccia grafica."
+
+            Write-Host "`r`nServizi superflui in arresto..."
+            . $InstallPath\QlikButler\Start-Commands.ps1 -Command "Arresta e disabilita servizi superflui"
             
         } -ArgumentList $NodeType, $InstallPath, $Acronimo, $Ambiente, $LocalConfig, $ClusterConfig, $NoConfig, $NoTasks, $InstallationType, $SystemConfig.QlikAdministratorUser, $SystemConfig.QlikAdministratorPassword
 

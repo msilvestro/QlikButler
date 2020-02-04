@@ -377,6 +377,27 @@ function Get-FileByFileDialog {
 
 }
 
+function Get-FolderByFolderDialog {
+
+    Add-Type -AssemblyName System.Windows.Forms
+    $FolderBrowser = New-Object System.Windows.Forms.FolderBrowserDialog -Property @{
+        SelectedPath = [Environment]::GetFolderPath('MyDocuments');
+    }
+    $FolderBrowserResult = $FolderBrowser.ShowDialog()
+    if ($FolderBrowserResult -eq "OK") {
+        $Path = $FolderBrowser.SelectedPath
+        Write-Host "Selezionato il percorso '$Path'."
+        return $Path
+    } elseif ($FolderBrowserResult -eq "Cancel") {
+        Write-Host "Operazione annullata."
+        return $false
+    } else {
+        Write-Host "Errore '$FolderBrowserResult'."
+        return $false
+    }
+
+}
+
 Export-ModuleMember -Function Import-ConfigFile
 Export-ModuleMember -Function Split-ConfigLine
 Export-ModuleMember -Function Get-NodeName
@@ -387,3 +408,4 @@ Export-ModuleMember -Function Test-WebPage
 Export-ModuleMember -Function Test-QlikSenseAccess
 Export-ModuleMember -Function Test-NPrintingAccess
 Export-ModuleMember -Function Get-FileByFileDialog
+Export-ModuleMember -Function Get-FolderByFolderDialog
