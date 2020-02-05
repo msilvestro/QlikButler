@@ -88,7 +88,7 @@ if ($Command -eq "Imposta tutti i servizi in manual") {
     $FileBrowserResult = $FileBrowser.ShowDialog()
     if ($FileBrowserResult -eq "OK") {
         $Source = $FileBrowser.FileName
-        Write-Host "Selezionato il file '$SourceAppPath'."
+        Write-Host "Selezionato il file '$Source'."
     } elseif ($FileBrowserResult -eq "Cancel") {
         Write-Host "Operazione annullata."
         exit
